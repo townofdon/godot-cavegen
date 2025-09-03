@@ -6,8 +6,8 @@ Level Generator for 3D Caves
 
 ## Influences
 
-- Sebastian Lague - Coding Adventure: Marching Cubes - https://www.youtube.com/watch?v=M3iI2l0ltbE
-- Deadlock - Mesh from Math - The basics of Marching Cubes - https://www.youtube.com/watch?v=KvwVYJY_IZ4
+- [Sebastian Lague - Coding Adventure: Marching Cubes](https://www.youtube.com/watch?v=M3iI2l0ltbE)
+- [Deadlock - Mesh from Math - The basics of Marching Cubes](https://www.youtube.com/watch?v=KvwVYJY_IZ4)
 
 ## Refs
 

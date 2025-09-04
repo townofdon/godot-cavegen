@@ -23,20 +23,19 @@ sky_material = SubResource("ProceduralSkyMaterial_4n1no")
 [sub_resource type="BoxShape3D" id="BoxShape3D_4n1no"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_oktae"]
-noise_type = 2
+noise_type = 3
 seed = 1
-frequency = 0.0042
-offset = Vector3(-243.24, -172.97, -108.91)
-fractal_type = 2
+frequency = 0.0656
+offset = Vector3(83.63, -172.97, -108.91)
+fractal_type = 0
 fractal_octaves = 6
 fractal_lacunarity = 1.93
-fractal_gain = 0.99
-fractal_weighted_strength = 0.96
+fractal_weighted_strength = 0.19
 domain_warp_enabled = true
-domain_warp_amplitude = 23.8
-domain_warp_frequency = 0.03
+domain_warp_amplitude = 19.94
+domain_warp_frequency = 0.01
 domain_warp_fractal_type = 2
-domain_warp_fractal_octaves = 4
+domain_warp_fractal_octaves = 1
 domain_warp_fractal_lacunarity = 11.06
 domain_warp_fractal_gain = 0.44
 metadata/_preview_in_3d_space_ = true

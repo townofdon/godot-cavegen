@@ -12,11 +12,14 @@ class_name Config
 @export var cell_size:float = 0.5:
 	set(v): cell_size = v; _notify_changed(1)
 
+# TODO: THESE NEED TO BE CONFIGURABLE PER-ROOM
 @export_group("Noise")
 @export var noise_seed: int = 0:
 	set(v): noise_seed = v; _notify_changed(1)
 @export var noise_cutoff := 0.5:
 	set(v): noise_cutoff = v; _notify_changed(1)
+@export var ceiling := 0.75:
+	set(v): ceiling = v; _notify_changed(1)
 
 #@export_group("Noise")
 #@export var noise_type := FastNoiseLite.NoiseType.TYPE_SIMPLEX_SMOOTH: set = _notify_changed

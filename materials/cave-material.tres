@@ -1,10 +1,11 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://d2n14wjt11iw5"]
 
 [resource]
-transparency = 1
-vertex_color_use_as_albedo = true
-albedo_color = Color(0.58479, 0.486024, 0.226537, 1)
+albedo_color = Color(0.71622, 0.517118, 0.104238, 1)
 roughness = 0.57
 emission = Color(0.368102, 0.368102, 0.368102, 1)
-use_point_size = true
+ao_enabled = true
+ao_light_affect = 0.58
+subsurf_scatter_strength = 0.52
+disable_receive_shadows = true
 point_size = 5.8

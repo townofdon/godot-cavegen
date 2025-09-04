@@ -28,14 +28,13 @@ func _ready() -> void:
 	notifTimer.stop()
 
 	# setup meshgen
-	var meshGenProps:MeshGen.Props = MeshGen.Props.new()
-	meshGen.initialize(meshGenProps)
+	meshGen.initialize(config)
 	regenerate()
 
 func regenerate():
 	if !meshGen: return
 	if !noise: return
-	meshGen.generate(config, noise)
+	meshGen.generate(noise)
 
 func _process(delta: float) -> void:
 	if _did_noise_change():

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dxfxnafbmfpq3"]
+[gd_scene load_steps=17 format=3 uid="uid://dxfxnafbmfpq3"]
 
 [ext_resource type="Script" uid="uid://rc8fwxkbdb3s" path="res://scripts/cavegen.gd" id="1_g2w4a"]
 [ext_resource type="Material" uid="uid://d2n14wjt11iw5" path="res://materials/cave-material.tres" id="2_4n1no"]
@@ -6,8 +6,19 @@
 [ext_resource type="Script" uid="uid://cajerf3qygveh" path="res://scripts/meshgen.gd" id="2_q7s53"]
 [ext_resource type="Script" uid="uid://dufqltf3etb6e" path="res://scripts/cameraman.gd" id="4_oktae"]
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_81352"]
+sky_top_color = Color(0.193016, 0.452556, 0.752828, 1)
+sky_horizon_color = Color(0.32314, 0.715301, 0.817377, 1)
+
+[sub_resource type="Sky" id="Sky_1gmwy"]
+sky_material = SubResource("ProceduralSkyMaterial_81352")
+
 [sub_resource type="Environment" id="Environment_q7s53"]
-background_mode = 1
+background_mode = 2
+sky = SubResource("Sky_1gmwy")
+ambient_light_source = 2
+ambient_light_color = Color(0.0532591, 0.178054, 0.268244, 1)
+ambient_light_energy = 0.78
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_4n1no"]
 
@@ -25,8 +36,8 @@ sky_material = SubResource("ProceduralSkyMaterial_4n1no")
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_oktae"]
 noise_type = 3
 seed = 1
-frequency = 0.0656
-offset = Vector3(83.63, -172.97, -108.91)
+frequency = 0.0302
+offset = Vector3(192.33, -97.29, -249.45)
 fractal_type = 0
 fractal_octaves = 6
 fractal_lacunarity = 1.93
@@ -71,12 +82,31 @@ light_data = SubResource("LightmapGIData_4n1no")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.235891, 3.13962, 0.435294)
+shadow_enabled = true
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.1203, 7.38765, -19.0908)
+light_size = 0.236
+shadow_enabled = true
+
+[node name="OmniLight3D3" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -35.2514, 10.5774, -3.7099)
+shadow_enabled = true
 
 [node name="LightmapProbe" type="LightmapProbe" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.341116, 0)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Lights"]
 transform = Transform3D(1, 0, 0, 0, 0.985794, 0.167956, 0, -0.167956, 0.985794, 0, 3.91357, 0.918446)
+shadow_enabled = true
+directional_shadow_mode = 0
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, -0.799873, 0.600169, 0, -0.600169, -0.799873, -0.3782, 3.91357, -2.90574)
+light_color = Color(0.126886, 0.415482, 0.667355, 1)
+light_energy = 0.003
+shadow_enabled = true
+directional_shadow_mode = 0
 
 [node name="Environment" type="Node3D" parent="."]
 

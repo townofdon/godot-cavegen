@@ -64,17 +64,32 @@ func process_noise(noise: Noise) -> void:
 				if val < minV: minV = val
 				if val > maxV: maxV = val
 	# second pass - normalize noise values
-	for i in len(noise_samples):
-		var val:float = 0
-		# calculate base noise
-		val = inverse_lerp(minV, maxV, noise_samples.get(i))
-		val = clampf(val, 0, 1)
-		# apply noise curve
-		var valEaseIn := Easing.Cubic.EaseIn(val, 0, 1, 1)
-		var valEaseOut := Easing.Cubic.EaseOut(val, 0, 1, 1)
-		val = lerpf(valEaseIn, val, clampf(cfg.curve, 0, 1))
-		val = lerpf(val, valEaseOut, clampf(cfg.curve - 1, 0, 1))
-		noise_samples.set(i, val)
+	for z in num_cells.z:
+		for y in num_cells.y:
+			for x in num_cells.x:
+				var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
+				var val:float = 0
+				# calculate base noise
+				val = inverse_lerp(minV, maxV, noise_samples.get(i))
+				val = clampf(val, 0, 1)
+				# apply noise curve
+				var valEaseIn := Easing.Cubic.EaseIn(val, 0, 1, 1)
+				var valEaseOut := Easing.Cubic.EaseOut(val, 0, 1, 1)
+				val = lerpf(valEaseIn, val, clampf(cfg.curve, 0, 1))
+				val = lerpf(val, valEaseOut, clampf(cfg.curve - 1, 0, 1))
+				noise_samples.set(i, val * get_above_ceil_multiplier(y))
+
+## return a value where 1 => at ceil, 0 => at bounds
+func get_above_ceil_multiplier(y:int) -> float:
+	var ceiling:int = floori(num_cells.y * cfg.ceiling)
+	var max_y:int = num_cells.y - 1
+	if (y < ceiling):
+		return 1.0
+	if (y > max_y):
+		return 0.0
+	if (ceiling >= max_y):
+		return 0.0
+	return clampf(inverse_lerp(max_y, ceiling, y), 0.0, 1.0)
 
 func get_noise_value(x:int, y:int, z:int) -> float:
 	var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
@@ -169,13 +184,12 @@ func is_point_active(x:int, y:int, z:int) -> bool:
 	return active
 
 func is_point_orphan(x:int, y:int, z:int) -> bool:
-	# walk down from y to ceiling, checking if any gaps
-	for y2 in range(y-1, floori(num_cells.y * cfg.ceiling), -1):
+	# walk down from y to slightly below the ceiling, checking if any gaps
+	for y2 in range(y-1, floori(num_cells.y * cfg.ceiling) - 2, -1):
 		var val := get_noise_value(x, y2, z)
-		var active := val >= cfg.iso_value
+		var active := val > cfg.iso_value
 		if !active: return true
 	return false
-
 
 #
 # debug

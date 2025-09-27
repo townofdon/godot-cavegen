@@ -26,8 +26,8 @@ func _physics_process(delta: float) -> void:
 		inputV -= 1.0
 	if Input.is_action_pressed("move_up"):
 		inputV += 1.0
-	var movement := transform.basis * (Vector3(inputH.x, 0, inputH.y))
-	movement = Vector3(movement.x, movement.y + inputV, movement.z) * moveSpeed * 0.1
+	var movement := transform.basis * (Vector3(inputH.x, inputV, inputH.y))
+	movement = Vector3(movement.x, movement.y, movement.z) * moveSpeed * 0.1
 	velocity = velocity.lerp(movement, 1 - exp(-acceleration * delta))
 	global_position = global_position + velocity
 

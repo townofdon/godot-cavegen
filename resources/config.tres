@@ -6,9 +6,11 @@
 script = ExtResource("1_mnatu")
 room_width = 30.0
 room_height = 30.0
-room_depth = 10.0
+room_depth = 30.0
 cell_size = 0.5
+border_size = 1
 noise_seed = 0
-noise_cutoff = 0.63
+iso_value = null
 ceiling = 0.67
+curve = null
 metadata/_custom_type_script = "uid://dqy6yru8mv4oj"

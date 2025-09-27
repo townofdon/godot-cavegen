@@ -7,19 +7,25 @@ class_name Config
 	set(v): room_width = v; _notify_changed(1)
 @export var room_height:float = 30:
 	set(v): room_height = v; _notify_changed(1)
-@export var room_depth:float = 10:
+@export var room_depth:float = 30:
 	set(v): room_depth = v; _notify_changed(1)
 @export var cell_size:float = 0.5:
 	set(v): cell_size = v; _notify_changed(1)
+@export var border_size:int = 1:
+	set(v): border_size = v; _notify_changed(1)
 
 # TODO: THESE NEED TO BE CONFIGURABLE PER-ROOM
 @export_group("Noise")
 @export var noise_seed: int = 0:
 	set(v): noise_seed = v; _notify_changed(1)
-@export var noise_cutoff := 0.5:
-	set(v): noise_cutoff = v; _notify_changed(1)
-@export var ceiling := 0.75:
+## threshold noise cutoff to determine where "inside" is
+@export var iso_value:float = 0.5:
+	set(v): iso_value = v; _notify_changed(1)
+## threshold designating where the ceiling should be
+@export var ceiling: float = 0.75:
 	set(v): ceiling = v; _notify_changed(1)
+## ease curve applied to noise: 0 => easeIn, 1 => linear, 2 => easeOut
+@export_range(0, 2) var curve:float = 1
 
 #@export_group("Noise")
 #@export var noise_type := FastNoiseLite.NoiseType.TYPE_SIMPLEX_SMOOTH: set = _notify_changed

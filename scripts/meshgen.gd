@@ -22,9 +22,9 @@ func generate(noise: Noise) -> void:
 
 func process_noise(noise: Noise) -> void:
 	num_cells = Vector3i(
-		floor(cfg.room_width / cfg.cell_size),
-		floor(cfg.room_height / cfg.cell_size),
-		floor(cfg.room_depth / cfg.cell_size),
+		floor(cfg.room_width / cfg.cell_size) + cfg.border_size * 2,
+		floor(cfg.room_height / cfg.cell_size) + cfg.border_size * 2,
+		floor(cfg.room_depth / cfg.cell_size) + cfg.border_size * 2,
 	)
 	noise_samples = []
 	var minV := INF
@@ -32,14 +32,48 @@ func process_noise(noise: Noise) -> void:
 	# first pass - sample all noise values in grid
 	for z in num_cells.z:
 		for y in num_cells.y:
+			var below_ceiling := y + 1 < cfg.ceiling * num_cells.y
 			for x in num_cells.x:
+				# if outside, set to 0
+				if (
+					x == 0 ||
+					y == 0 ||
+					z == 0 ||
+					x == num_cells.x - 1 ||
+					y == num_cells.y - 1 ||
+					z == num_cells.z - 1
+				):
+					noise_samples.append(0)
+					continue
+				# if border, set to 1
+				if (
+					below_ceiling && (
+						x <= cfg.border_size ||
+						y <= cfg.border_size ||
+						z <= cfg.border_size ||
+						x >= num_cells.x - 1 - cfg.border_size ||
+						y >= num_cells.y - 1 - cfg.border_size ||
+						z >= num_cells.z - 1 - cfg.border_size
+					)
+				):
+					noise_samples.append(1)
+					continue
+				# calc actual noise value for everything else
 				var val := noise.get_noise_3d(x, y, z)
 				noise_samples.append(val)
 				if val < minV: minV = val
 				if val > maxV: maxV = val
 	# second pass - normalize noise values
 	for i in len(noise_samples):
-		var val:float = inverse_lerp(minV, maxV, noise_samples.get(i))
+		var val:float = 0
+		# calculate base noise
+		val = inverse_lerp(minV, maxV, noise_samples.get(i))
+		val = clampf(val, 0, 1)
+		# apply noise curve
+		var valEaseIn := Easing.Cubic.EaseIn(val, 0, 1, 1)
+		var valEaseOut := Easing.Cubic.EaseOut(val, 0, 1, 1)
+		val = lerpf(valEaseIn, val, clampf(cfg.curve, 0, 1))
+		val = lerpf(val, valEaseOut, clampf(cfg.curve - 1, 0, 1))
 		noise_samples.set(i, val)
 
 func get_noise_value(x:int, y:int, z:int) -> float:
@@ -88,6 +122,7 @@ func march_cubes() -> void:
 					var z1:int = points1[2]
 					var a = Vector3(x + x0, y + y0, z + z0)
 					var b = Vector3(x + x1, y + y1, z + z1)
+					# TODO: INTERPOLATE a AND b!
 					var point = (a + b) * 0.5;
 					points.append(point)
 				@warning_ignore("integer_division")
@@ -106,9 +141,12 @@ func add_triangle_to_mesh(points: Array[Vector3], uv: Vector2) -> void:
 	var p3 := points[2]
 	var normal := (p2 - p1).cross(p3 - p1).normalized();
 	for point in points:
+		var x := (point.x - cfg.border_size) * cfg.cell_size
+		var y := (point.y - cfg.border_size) * cfg.cell_size
+		var z := (point.z - cfg.border_size) * cfg.cell_size
 		mesh.surface_set_uv(uv)
 		mesh.surface_set_normal(normal)
-		mesh.surface_add_vertex(point)
+		mesh.surface_add_vertex(global_position + Vector3(x, y, z))
 
 func getTriangulation(x:int, y:int, z:int) -> int:
 	var idx:int = 0
@@ -124,9 +162,8 @@ func getTriangulation(x:int, y:int, z:int) -> int:
 
 func is_point_active(x:int, y:int, z:int) -> bool:
 	var val := get_noise_value(x, y, z)
-	var active := val >= cfg.noise_cutoff
-	var ycent := float(y + 1) / float(num_cells.y)
-	var below_ceiling := ycent < cfg.ceiling
+	var active := val >= cfg.iso_value
+	var below_ceiling := y + 1 < cfg.ceiling * num_cells.y
 	if active && !below_ceiling && is_point_orphan(x, y, z):
 		active = false
 	return active
@@ -135,11 +172,9 @@ func is_point_orphan(x:int, y:int, z:int) -> bool:
 	# walk down from y to ceiling, checking if any gaps
 	for y2 in range(y-1, floori(num_cells.y * cfg.ceiling), -1):
 		var val := get_noise_value(x, y2, z)
-		var active := val >= cfg.noise_cutoff
+		var active := val >= cfg.iso_value
 		if !active: return true
 	return false
-
-
 
 
 #

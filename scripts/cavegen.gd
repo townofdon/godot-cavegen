@@ -5,8 +5,8 @@ const Config2 = preload("res://scripts/Config2.cs")
 
 @export var config:Config
 
-@onready var meshGen: MeshGen = %mesh
-@onready var meshGen2 = %mesh2
+@onready var meshGen:MeshGen = %mesh
+@onready var meshGen2:MeshInstance3D = %mesh2
 @onready var textureRect:TextureRect = %TextureRect
 @onready var notifTimer:Timer = %Timer
 
@@ -41,6 +41,13 @@ func regenerate():
 	#meshGen.generate(noise)
 	meshGen2.SetConfig(config.as_config_2())
 	meshGen2.Generate(noise)
+
+	if meshGen2.mesh is ImmediateMesh:
+		var mat:ShaderMaterial = meshGen2.material_override
+		if mat && mat is ShaderMaterial:
+			var y_ceil := config.room_height * config.ceiling
+			mat.set_shader_parameter("y_ceil", y_ceil * 0.8)
+			mat.set_shader_parameter("y_min", 0.0)
 
 func _process(_delta: float) -> void:
 	if _did_noise_change():

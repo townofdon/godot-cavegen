@@ -177,8 +177,6 @@ public partial class MeshGen2 : MeshInstance3D
 
     void MarchCubes()
     {
-        int count = 0;
-
         // Mesh = new ImmediateMesh();
         Assert(Mesh != null);
         Assert(Mesh is ImmediateMesh);
@@ -231,7 +229,7 @@ public partial class MeshGen2 : MeshInstance3D
         var p1 = points[0];
         var p2 = points[1];
         var p3 = points[2];
-        var normal = (p2 - p1).Cross(p3 - p1).Normalized();
+        var normal = -(p2 - p1).Cross(p3 - p1).Normalized();
         foreach (var point in points)
         {
             var x = (point.X - cfg.BorderSize) * cfg.CellSize;
@@ -268,6 +266,7 @@ public partial class MeshGen2 : MeshInstance3D
         return active;
     }
 
+    // TODO: replace with flood-fill from known border
     bool IsPointOrphan(int x, int y, int z)
     {
         if (!cfg.RemoveOrphans) return false;
@@ -294,6 +293,7 @@ public partial class MeshGen2 : MeshInstance3D
         return noiseSamples[i];
     }
 
+    // source: https://cs.stackexchange.com/a/71116
     Vec3 InterpolatePoints(Vec3 a, Vec3 b)
     {
         if (!cfg.Interpolate)

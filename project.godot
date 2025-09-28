@@ -12,8 +12,12 @@ config_version=5
 
 config/name="cavegen"
 run/main_scene="uid://dxfxnafbmfpq3"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[dotnet]
+
+project/assembly_name="cavegen"
 
 [input]
 

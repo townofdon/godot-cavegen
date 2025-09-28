@@ -2,6 +2,8 @@
 extends Resource
 class_name Config
 
+const Config2 = preload("res://scripts/Config2.cs")
+
 @export_group("Room")
 @export var room_width:float = 30:
 	set(v): room_width = v; _notify_changed(1)
@@ -55,6 +57,20 @@ class_name Config
 #@export var domain_warp_frequency:float = 0.05: set = _notify_changed
 #@export var domain_warp_amplitude := 30.0: set = _notify_changed
 #
+
+func as_config_2():
+	var c2 = Config2.new()
+	c2.RoomWidth = room_width
+	c2.RoomHeight = room_height
+	c2.RoomDepth = room_depth
+	c2.CellSize = cell_size
+	c2.BorderSize = border_size
+	c2.NoiseSeed = noise_seed
+	c2.IsoValue = iso_value
+	c2.Ceiling = ceiling
+	c2.Curve = curve
+	c2.Interpolate = interpolate
+	return c2
 
 signal on_changed
 

@@ -1,9 +1,12 @@
 extends Node3D
 class_name CaveGen
 
+const Config2 = preload("res://scripts/Config2.cs")
+
 @export var config:Config
 
 @onready var meshGen: MeshGen = %mesh
+@onready var meshGen2 = %mesh2
 @onready var textureRect:TextureRect = %TextureRect
 @onready var notifTimer:Timer = %Timer
 
@@ -28,15 +31,17 @@ func _ready() -> void:
 	notifTimer.stop()
 
 	# setup meshgen
-	meshGen.initialize(config)
+	#meshGen.initialize(config)
+	meshGen2.Initialize(config.as_config_2())
 	regenerate()
 
 func regenerate():
 	if !meshGen: return
 	if !noise: return
-	meshGen.generate(noise)
+	#meshGen.generate(noise)
+	meshGen2.Generate(noise)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _did_noise_change():
 		_notify_change()
 	noiseB = noise.duplicate()

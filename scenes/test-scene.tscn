@@ -32,16 +32,16 @@ ambient_light_energy = 0.78
 [sub_resource type="BoxShape3D" id="BoxShape3D_4n1no"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_oktae"]
-noise_type = 3
-seed = 1
-frequency = 0.0829
-offset = Vector3(279.29, -97.29, -249.45)
-fractal_type = 0
+noise_type = 4
+seed = 2
+frequency = 0.0376
+offset = Vector3(331.24, -97.29, -152.15)
+fractal_type = 3
 fractal_octaves = 6
 fractal_lacunarity = 1.93
 fractal_weighted_strength = 0.19
 domain_warp_enabled = true
-domain_warp_amplitude = 19.94
+domain_warp_amplitude = 19.15
 domain_warp_frequency = 0.01
 domain_warp_fractal_type = 2
 domain_warp_fractal_octaves = 1

@@ -25,7 +25,11 @@ class_name Config
 @export var ceiling: float = 0.75:
 	set(v): ceiling = v; _notify_changed(1)
 ## ease curve applied to noise: 0 => easeIn, 1 => linear, 2 => easeOut
-@export_range(0, 2) var curve:float = 1
+@export_range(0, 2) var curve:float = 1:
+	set(v): curve = v; _notify_changed(1)
+## when enabled, vertices are interpolated to more closely match the isosurface
+@export var interpolate:bool = true:
+	set(v): interpolate = v; _notify_changed(1)
 
 #@export_group("Noise")
 #@export var noise_type := FastNoiseLite.NoiseType.TYPE_SIMPLEX_SMOOTH: set = _notify_changed

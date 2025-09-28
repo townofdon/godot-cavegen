@@ -29,12 +29,13 @@ func process_noise(noise: Noise) -> void:
 	noise_samples = []
 	var minV := INF
 	var maxV := -INF
-	# first pass - sample all noise values in grid
+	# first pass - sample all noise values in grid - ORDER MATTERS HERE FOR NOISE LOOKUP!
 	for z in num_cells.z:
 		for y in num_cells.y:
-			var below_ceiling := y + 1 < cfg.ceiling * num_cells.y
 			for x in num_cells.x:
-				# if outside, set to 0
+				var val := noise.get_noise_3d(x, y, z)
+				noise_samples.append(val)
+				# if at boundary, skip
 				if (
 					x == 0 ||
 					y == 0 ||
@@ -43,24 +44,16 @@ func process_noise(noise: Noise) -> void:
 					y == num_cells.y - 1 ||
 					z == num_cells.z - 1
 				):
-					noise_samples.append(0)
 					continue
-				# if border, set to 1
-				if (
-					below_ceiling && (
-						x <= cfg.border_size ||
-						y <= cfg.border_size ||
-						z <= cfg.border_size ||
-						x >= num_cells.x - 1 - cfg.border_size ||
-						y >= num_cells.y - 1 - cfg.border_size ||
-						z >= num_cells.z - 1 - cfg.border_size
-					)
+				# if below_ceiling and at border, skip
+				if (y + 1 < cfg.ceiling * num_cells.y) && (
+					x <= cfg.border_size ||
+					y <= cfg.border_size ||
+					z <= cfg.border_size ||
+					x >= num_cells.x - 1 - cfg.border_size ||
+					z >= num_cells.z - 1 - cfg.border_size
 				):
-					noise_samples.append(1)
 					continue
-				# calc actual noise value for everything else
-				var val := noise.get_noise_3d(x, y, z)
-				noise_samples.append(val)
 				if val < minV: minV = val
 				if val > maxV: maxV = val
 	# second pass - normalize noise values
@@ -78,6 +71,32 @@ func process_noise(noise: Noise) -> void:
 				val = lerpf(valEaseIn, val, clampf(cfg.curve, 0, 1))
 				val = lerpf(val, valEaseOut, clampf(cfg.curve - 1, 0, 1))
 				noise_samples.set(i, val * get_above_ceil_multiplier(y))
+	# third pass - apply bounds, borders
+	for y in num_cells.y:
+		for z in num_cells.z:
+			for x in num_cells.x:
+				var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
+				# if at boundary, set to 0
+				if (
+					x == 0 ||
+					y == 0 ||
+					z == 0 ||
+					x == num_cells.x - 1 ||
+					y == num_cells.y - 1 ||
+					z == num_cells.z - 1
+				):
+					noise_samples.set(i, 0)
+					continue
+				# if below ceiling and at border, set to 1
+				if (y + 1 < cfg.ceiling * num_cells.y) && (
+					x <= cfg.border_size ||
+					y <= cfg.border_size ||
+					z <= cfg.border_size ||
+					x >= num_cells.x - 1 - cfg.border_size ||
+					z >= num_cells.z - 1 - cfg.border_size
+				):
+					noise_samples.set(i, 1)
+					continue
 
 ## return a value where 1 => at ceil, 0 => at bounds
 func get_above_ceil_multiplier(y:int) -> float:
@@ -91,11 +110,39 @@ func get_above_ceil_multiplier(y:int) -> float:
 		return 0.0
 	return clampf(inverse_lerp(max_y, ceiling, y), 0.0, 1.0)
 
-func get_noise_value(x:int, y:int, z:int) -> float:
-	var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
-	if (i < 0 || i >= len(noise_samples)):
-		return INF;
-	return noise_samples.get(i)
+## determine whether coords are outside the bounds
+#func is_bounds(x:int, y:int, z:int) -> bool:
+	#return (
+		#x == 0 ||
+		#y == 0 ||
+		#z == 0 ||
+		#x == num_cells.x - 1 ||
+		#y == num_cells.y - 1 ||
+		#z == num_cells.z - 1
+	#)
+
+## return true when coords constitute a border (wall)
+#func is_border(x:int, y:int, z:int) -> bool:
+	#return !is_bounds(x, y, z) && (
+		#x <= cfg.border_size ||
+		#y <= cfg.border_size ||
+		#z <= cfg.border_size ||
+		## exclude (y >= borderStart) check since the ceiling is always open
+		#x >= num_cells.x - 1 - cfg.border_size ||
+		#z >= num_cells.z - 1 - cfg.border_size
+	#)
+
+func dist_from_border(x:int, y:int, z:int) -> int:
+	var dist_x:int = mini(absi(x - cfg.border_size), absi(num_cells.x - 1 - cfg.border_size - x))
+	var dist_y:int = absi(y - cfg.border_size)
+	var dist_z:int = mini(absi(z - cfg.border_size), absi(num_cells.z - 1 - cfg.border_size - z))
+	return mini(mini(dist_x, dist_y), dist_z)
+
+#func get_noise_value(x:int, y:int, z:int) -> float:
+	#var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
+	#assert(i >= 0)
+	#assert(i < len(noise_samples))
+	#return noise_samples.get(i)
 
 func march_cubes() -> void:
 	mesh = ImmediateMesh.new()
@@ -137,9 +184,9 @@ func march_cubes() -> void:
 					var z1:int = points1[2]
 					var a = Vector3(x + x0, y + y0, z + z0)
 					var b = Vector3(x + x1, y + y1, z + z1)
-					# TODO: INTERPOLATE a AND b!
-					var point = (a + b) * 0.5;
-					points.append(point)
+					points.append(interpolate_points(a, b))
+					#var point = (a + b) * 0.5;
+					#points.append(point)
 				@warning_ignore("integer_division")
 				for i in len(points) / 3:
 					var point0 := points[i*3 + 0]
@@ -147,6 +194,36 @@ func march_cubes() -> void:
 					var point2 := points[i*3 + 2]
 					add_triangle_to_mesh([point0, point1, point2], uv)
 	mesh.surface_end()
+
+## note - this assumes p0 and p1 are points on the noise grid.
+func interpolate_points(a: Vector3, b: Vector3) -> Vector3:
+	if (!cfg.interpolate):
+		return (a + b) * 0.5;
+	var ia := int(a.x) + int(a.y)*num_cells.x + int(a.z)*num_cells.y*num_cells.x
+	var ib := int(b.x) + int(b.y)*num_cells.x + int(b.z)*num_cells.y*num_cells.x
+	assert(ia >= 0)
+	assert(ia < len(noise_samples))
+	assert(ib >= 0)
+	assert(ib < len(noise_samples))
+	#var noise_a := get_noise_value(int(a.x), int(a.y), int(a.z))
+	#var noise_b := get_noise_value(int(b.x), int(b.y), int(b.z))
+	var noise_a:float = noise_samples.get(ia)
+	var noise_b:float = noise_samples.get(ib)
+	assert(noise_a >= cfg.iso_value || noise_b >= cfg.iso_value)
+	assert(noise_a != INF)
+	assert(noise_b != INF)
+	if is_zero_approx((absf(cfg.iso_value - noise_a))):
+		return a
+	if is_zero_approx((absf(cfg.iso_value - noise_b))):
+		return b
+	if is_zero_approx((absf(noise_a - noise_b))):
+		return (a + b) * 0.5;
+	var mu := clampf((cfg.iso_value - noise_a) / (noise_b - noise_a), 0, 1)
+	var p := Vector3.ZERO
+	p.x = a.x + mu * (b.x - a.x);
+	p.y = a.y + mu * (b.y - a.y);
+	p.z = a.z + mu * (b.z - a.z);
+	return p
 
 func add_triangle_to_mesh(points: Array[Vector3], uv: Vector2) -> void:
 	assert(points)
@@ -176,20 +253,31 @@ func getTriangulation(x:int, y:int, z:int) -> int:
 	return idx
 
 func is_point_active(x:int, y:int, z:int) -> bool:
-	var val := get_noise_value(x, y, z)
+	var i := x + y*num_cells.x + z*num_cells.y*num_cells.x
+	assert(i >= 0)
+	assert(i < len(noise_samples))
+	var val:float = noise_samples.get(i)
+	#var val := get_noise_value(x, y, z)
 	var active := val >= cfg.iso_value
 	var below_ceiling := y + 1 < cfg.ceiling * num_cells.y
-	if active && !below_ceiling && is_point_orphan(x, y, z):
-		active = false
+	# check for orphan sections above ceiling
+	if active && !below_ceiling:
+		for y2 in range(y-1, floori(num_cells.y * cfg.ceiling) - 2, -1):
+			var i2 := x + y2*num_cells.x + z*num_cells.y*num_cells.x
+			assert(i2 >= 0)
+			assert(i2 < len(noise_samples))
+			var val2:float = noise_samples.get(i)
+			if val2 > cfg.iso_value:
+				active = false
 	return active
 
-func is_point_orphan(x:int, y:int, z:int) -> bool:
-	# walk down from y to slightly below the ceiling, checking if any gaps
-	for y2 in range(y-1, floori(num_cells.y * cfg.ceiling) - 2, -1):
-		var val := get_noise_value(x, y2, z)
-		var active := val > cfg.iso_value
-		if !active: return true
-	return false
+#func is_point_orphan(x:int, y:int, z:int) -> bool:
+	## walk down from y to slightly below the ceiling, checking if any gaps
+	#for y2 in range(y-1, floori(num_cells.y * cfg.ceiling) - 2, -1):
+		#var val := get_noise_value(x, y2, z)
+		#var active := val > cfg.iso_value
+		#if !active: return true
+	#return false
 
 #
 # debug

@@ -32,20 +32,21 @@ func _ready() -> void:
 
 	# setup meshgen
 	#meshGen.initialize(config)
-	meshGen2.Initialize(config.as_config_2())
+	meshGen2.SetConfig(config.as_config_2())
 	regenerate()
 
 func regenerate():
-	if !meshGen: return
+	if !meshGen2: return
 	if !noise: return
 	#meshGen.generate(noise)
+	meshGen2.SetConfig(config.as_config_2())
 	meshGen2.Generate(noise)
 
 func _process(_delta: float) -> void:
 	if _did_noise_change():
 		_notify_change()
 	noiseB = noise.duplicate()
-	
+
 func _notify_change():
 	if notifTimer.is_stopped(): notifTimer.start()
 

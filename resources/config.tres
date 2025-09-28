@@ -4,5 +4,9 @@
 
 [resource]
 script = ExtResource("1_mnatu")
+cell_size = 1.0
+iso_value = 0.51
 ceiling = 0.67
+curve = 0.808
+remove_orphans = false
 metadata/_custom_type_script = "uid://dqy6yru8mv4oj"

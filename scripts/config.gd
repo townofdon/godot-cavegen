@@ -32,6 +32,9 @@ const Config2 = preload("res://scripts/Config2.cs")
 ## when enabled, vertices are interpolated to more closely match the isosurface
 @export var interpolate:bool = true:
 	set(v): interpolate = v; _notify_changed(1)
+## when enabled, orphaned sections (islands) above the ceiling are removed
+@export var remove_orphans:bool = true:
+	set(v): remove_orphans = v; _notify_changed(1)
 
 #@export_group("Noise")
 #@export var noise_type := FastNoiseLite.NoiseType.TYPE_SIMPLEX_SMOOTH: set = _notify_changed
@@ -70,6 +73,7 @@ func as_config_2():
 	c2.Ceiling = ceiling
 	c2.Curve = curve
 	c2.Interpolate = interpolate
+	c2.RemoveOrphans = remove_orphans
 	return c2
 
 signal on_changed

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dxfxnafbmfpq3"]
+[gd_scene load_steps=17 format=3 uid="uid://dxfxnafbmfpq3"]
 
 [ext_resource type="Script" uid="uid://rc8fwxkbdb3s" path="res://scripts/cavegen.gd" id="1_g2w4a"]
 [ext_resource type="Resource" uid="uid://cvplxws0iir6t" path="res://resources/config.tres" id="2_81352"]
@@ -11,8 +11,19 @@
 render_priority = 0
 shader = ExtResource("3_81352")
 shader_parameter/light_direction = Vector3(0, 0, 1)
-shader_parameter/color_lit = Color(0.725562, 0.62504, 0.210684, 1)
+shader_parameter/color_lit = Color(0.91764706, 0.49803922, 0.32941177, 1)
 shader_parameter/color_shadow = Color(0.040908, 0.184341, 0.273258, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1gmwy"]
+transparency = 1
+disable_ambient_light = true
+disable_fog = true
+disable_specular_occlusion = true
+albedo_color = Color(0.86803275, 0.7527958, 0.46839666, 1)
+use_point_size = true
+point_size = 4.2
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_1gmwy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_81352"]
 sky_top_color = Color(0.193016, 0.452556, 0.752828, 1)
@@ -33,20 +44,20 @@ ambient_light_energy = 0.78
 [sub_resource type="BoxShape3D" id="BoxShape3D_4n1no"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_oktae"]
-noise_type = 4
-seed = 2
-frequency = 0.0376
-offset = Vector3(331.24, -97.29, -152.15)
-fractal_type = 3
+noise_type = 3
+seed = -1
+frequency = 0.069
+offset = Vector3(45.53, -86.3, -152.15)
 fractal_octaves = 6
-fractal_lacunarity = 1.93
-fractal_weighted_strength = 0.19
+fractal_lacunarity = 1.63
+fractal_gain = 0.48
+fractal_ping_pong_strength = 2.08
 domain_warp_enabled = true
-domain_warp_amplitude = 19.15
+domain_warp_amplitude = 27.82
 domain_warp_frequency = 0.01
 domain_warp_fractal_type = 2
 domain_warp_fractal_octaves = 1
-domain_warp_fractal_lacunarity = 11.06
+domain_warp_fractal_lacunarity = 10.9
 domain_warp_fractal_gain = 0.44
 metadata/_preview_in_3d_space_ = true
 
@@ -67,11 +78,19 @@ cast_shadow = 0
 gi_mode = 0
 script = ExtResource("2_q7s53")
 
+[node name="mesh3b" type="MeshInstance3D" parent="CaveGenerator"]
+unique_name_in_owner = true
+material_override = SubResource("StandardMaterial3D_1gmwy")
+cast_shadow = 0
+gi_mode = 0
+script = ExtResource("5_1gmwy")
+
 [node name="mesh2" type="MeshInstance3D" parent="CaveGenerator"]
 unique_name_in_owner = true
 material_override = SubResource("ShaderMaterial_1gmwy")
 cast_shadow = 0
 gi_mode = 0
+mesh = SubResource("ImmediateMesh_1gmwy")
 script = ExtResource("5_1gmwy")
 
 [node name="Camera3D" type="Camera3D" parent="."]

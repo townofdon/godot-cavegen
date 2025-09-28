@@ -8,6 +8,7 @@ var _is_mouse_in_window := false
 var move:Vector3 = Vector3.ZERO
 var look:Vector2 = Vector2.ZERO
 var velocity:Vector3 = Vector3.ZERO
+var looking:bool = false
 
 func _ready() -> void:
 	#Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -15,9 +16,17 @@ func _ready() -> void:
 	look.y = transform.basis.get_euler().y
 
 func _physics_process(delta: float) -> void:
+	if (Input.is_action_pressed("looking")):
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		looking = true
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		looking = false
+
 	# Mouse movement.
-	look.y = clamp(look.y, -1560, 1560)
-	transform.basis = Basis.from_euler(Vector3(look.y * -0.001, look.x * -0.001, 0))
+	if looking:
+		look.y = clamp(look.y, -1560, 1560)
+		transform.basis = Basis.from_euler(Vector3(look.y * -0.001, look.x * -0.001, 0))
 
 	# Keyboard input
 	var inputH := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
@@ -33,7 +42,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _input(event):
-	if event is InputEventMouseMotion:
+	if (event is InputEventMouseMotion) && looking:
 		look += event.relative
 		#if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 			#look += event.relative

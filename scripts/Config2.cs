@@ -3,7 +3,7 @@ using Godot;
 public partial class Config2 : RefCounted
 {
 
-    public struct DataFormat
+    public struct DataPacked
     {
         // room
         public float RoomWidth;
@@ -17,9 +17,10 @@ public partial class Config2 : RefCounted
         public float Ceiling;
         public float Curve;
         public bool Interpolate;
+        public bool RemoveOrphans;
     }
 
-    public DataFormat data = new();
+    public DataPacked data = new();
 
     [Signal]
     public delegate void OnChangedEventHandler();
@@ -68,6 +69,10 @@ public partial class Config2 : RefCounted
     public bool Interpolate { get { return _interpolate; } set { _interpolate = value; notifyChanged(); } }
     bool _interpolate = true;
 
+    [Export]
+    public bool RemoveOrphans { get { return _removeOrphans; } set { _removeOrphans = value; notifyChanged(); } }
+    bool _removeOrphans = true;
+
     private void notifyChanged()
     {
         EmitSignal(SignalName.OnChanged);
@@ -85,5 +90,6 @@ public partial class Config2 : RefCounted
         data.Ceiling = Ceiling;
         data.Curve = Curve;
         data.Interpolate = Interpolate;
+        data.RemoveOrphans = RemoveOrphans;
     }
 }

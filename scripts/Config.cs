@@ -26,6 +26,7 @@ public partial class Config : Resource
         // room border
         public bool UseBorderNoise;
         public int BorderSize;
+        public float SmoothBorderNoise;
         public int FalloffNearBorder;
     }
 
@@ -107,6 +108,10 @@ public partial class Config : Resource
     public int BorderSize { get { return _borderSize; } set { _borderSize = value; notifyChanged(); } }
     int _borderSize = 1;
 
+    [Export(PropertyHint.Range, "0,1,0.01")]
+    public float SmoothBorderNoise { get { return _smoothBorderNoise; } set { _smoothBorderNoise = value; notifyChanged(); } }
+    float _smoothBorderNoise = 0.5f;
+
     [Export(PropertyHint.Range, "0,10,")]
     public int FalloffNearBorder { get { return _nearBorderFalloff; } set { _nearBorderFalloff = value; notifyChanged(); } }
     int _nearBorderFalloff = 2;
@@ -132,6 +137,7 @@ public partial class Config : Resource
         // room border
         data.UseBorderNoise = UseBorderNoise;
         data.BorderSize = BorderSize;
+        data.SmoothBorderNoise = SmoothBorderNoise;
         data.FalloffNearBorder = FalloffNearBorder;
     }
 

@@ -4,11 +4,14 @@
 
 [resource]
 script = ExtResource("1_mnatu")
-Ceiling = 0.77
+Ceiling = 0.68
 ActivePlaneOffset = 5.0
-IsoValue = 0.4
-Curve = 0.55
-FalloffAboveCeiling = 0.0
+IsoValue = 0.21
+Curve = 0.1
+FalloffAboveCeiling = 0.07
 RemoveOrphans = false
+UseBorderNoise = true
+BorderSize = 3
+SmoothBorderNoise = 0.0
 FalloffNearBorder = 1
 metadata/_custom_type_script = "uid://u6ssfqkgoccj"

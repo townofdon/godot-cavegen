@@ -1,28 +1,18 @@
 extends Node3D
 class_name CaveGen
 
-const Config2 = preload("res://scripts/Config2.cs")
+@export var config2:Config2
+@export var noise:FastNoiseLite
 
-@export var config:Config
-
-@onready var meshGen:MeshGen = %mesh
-@onready var meshGen2:MeshInstance3D = %mesh2
-@onready var textureRect:TextureRect = %TextureRect
+@onready var meshGen:MeshInstance3D = %mesh
 @onready var notifTimer:Timer = %Timer
 
-var noise:FastNoiseLite
 var noiseB:FastNoiseLite
 
 func _ready() -> void:
-	assert(config)
-	config.on_changed.connect(_notify_change)
-
-	# setup texture noise
-	var texture := textureRect.texture
-	if (texture is NoiseTexture2D && texture.noise):
-		noise = texture.noise as FastNoiseLite
-		if !noise.seed: noise.seed = config.noise_seed
-	textureRect.visible = false
+	assert(config2)
+	assert(noise)
+	config2.OnChanged.connect(_notify_change)
 
 	# setup notification timer
 	notifTimer.autostart = false
@@ -31,21 +21,20 @@ func _ready() -> void:
 	notifTimer.stop()
 
 	# setup meshgen
-	#meshGen.initialize(config)
-	meshGen2.SetConfig(config.as_config_2())
+	meshGen.SetConfig(config2)
 	regenerate()
 
 func regenerate():
-	if !meshGen2: return
+	if !meshGen: return
 	if !noise: return
 	#meshGen.generate(noise)
-	meshGen2.SetConfig(config.as_config_2())
-	meshGen2.Generate(noise)
+	meshGen.SetConfig(config2)
+	meshGen.Generate(noise)
 
-	if meshGen2.mesh is ImmediateMesh:
-		var mat:ShaderMaterial = meshGen2.material_override
+	if meshGen.mesh is ImmediateMesh:
+		var mat:ShaderMaterial = meshGen.material_override
 		if mat && mat is ShaderMaterial:
-			var y_ceil := config.room_height * config.ceiling
+			var y_ceil := config2.RoomHeight * config2.Ceiling
 			mat.set_shader_parameter("y_ceil", y_ceil * 0.8)
 			mat.set_shader_parameter("y_min", 0.0)
 

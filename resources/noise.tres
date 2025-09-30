@@ -1,0 +1,5 @@
+[gd_resource type="FastNoiseLite" format=3 uid="uid://cbsx070fvsncd"]
+
+[resource]
+offset = Vector3(0, 2.1, 80.5)
+fractal_gain = 0.84

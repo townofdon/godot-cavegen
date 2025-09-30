@@ -1,8 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://dxfxnafbmfpq3"]
+[gd_scene load_steps=16 format=3 uid="uid://dxfxnafbmfpq3"]
 
 [ext_resource type="Script" uid="uid://rc8fwxkbdb3s" path="res://scripts/cavegen.gd" id="1_g2w4a"]
-[ext_resource type="Resource" uid="uid://cvplxws0iir6t" path="res://resources/config.tres" id="2_81352"]
-[ext_resource type="Script" uid="uid://cajerf3qygveh" path="res://scripts/meshgen.gd" id="2_q7s53"]
+[ext_resource type="Resource" uid="uid://cvihrpcwndnad" path="res://resources/config2.tres" id="2_1gmwy"]
+[ext_resource type="FastNoiseLite" uid="uid://cbsx070fvsncd" path="res://resources/noise.tres" id="3_1gmwy"]
 [ext_resource type="Shader" uid="uid://dfbfcdbqplpaw" path="res://shaders/mesh-preview.gdshader" id="3_81352"]
 [ext_resource type="Script" uid="uid://dufqltf3etb6e" path="res://scripts/cameraman.gd" id="4_oktae"]
 [ext_resource type="Script" uid="uid://xvfau5vu2kth" path="res://scripts/MeshGen2.cs" id="5_1gmwy"]
@@ -17,15 +17,6 @@ shader_parameter/color_ceil = Color(0, 0.8901961, 0.88235295, 0.5058824)
 shader_parameter/color_bottom = Color(0.1, 0.1, 0.1, 1)
 shader_parameter/y_ceil = 0.16
 shader_parameter/y_min = -1.0
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1gmwy"]
-transparency = 1
-disable_ambient_light = true
-disable_fog = true
-disable_specular_occlusion = true
-albedo_color = Color(0.86803275, 0.7527958, 0.46839666, 1)
-use_point_size = true
-point_size = 4.2
 
 [sub_resource type="ImmediateMesh" id="ImmediateMesh_1gmwy"]
 
@@ -71,29 +62,21 @@ in_3d_space = true
 
 [node name="CaveGenerator" type="Node3D" parent="."]
 script = ExtResource("1_g2w4a")
-config = ExtResource("2_81352")
+config2 = ExtResource("2_1gmwy")
+noise = ExtResource("3_1gmwy")
 
 [node name="mesh" type="MeshInstance3D" parent="CaveGenerator"]
 unique_name_in_owner = true
 material_override = SubResource("ShaderMaterial_1gmwy")
 cast_shadow = 0
 gi_mode = 0
-script = ExtResource("2_q7s53")
-
-[node name="mesh3b" type="MeshInstance3D" parent="CaveGenerator"]
-unique_name_in_owner = true
-material_override = SubResource("StandardMaterial3D_1gmwy")
-cast_shadow = 0
-gi_mode = 0
-script = ExtResource("5_1gmwy")
-
-[node name="mesh2" type="MeshInstance3D" parent="CaveGenerator"]
-unique_name_in_owner = true
-material_override = SubResource("ShaderMaterial_1gmwy")
-cast_shadow = 0
-gi_mode = 0
 mesh = SubResource("ImmediateMesh_1gmwy")
 script = ExtResource("5_1gmwy")
+
+[node name="Timer" type="Timer" parent="CaveGenerator"]
+unique_name_in_owner = true
+wait_time = 0.2
+one_shot = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.755431, 0.655229, 0, -0.655229, 0.755431, 0, 2.20209, 2.00641)
@@ -119,11 +102,7 @@ shape = SubResource("BoxShape3D_4n1no")
 
 [node name="TextureRect" type="TextureRect" parent="UI"]
 unique_name_in_owner = true
+visible = false
 offset_right = 1500.0
 offset_bottom = 1500.0
 texture = SubResource("NoiseTexture2D_81352")
-
-[node name="Timer" type="Timer" parent="UI"]
-unique_name_in_owner = true
-wait_time = 0.2
-one_shot = true

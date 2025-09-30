@@ -5,16 +5,17 @@ using CaveGen.Constants;
 
 using System.Diagnostics;
 
-public partial class MeshGen2 : MeshInstance3D
+[GlobalClass]
+public partial class MeshGen : MeshInstance3D
 {
-    Config2 cfgSrc;
-    Config2.DataPacked cfg;
+    Config cfgSrc;
+    Config.DataPacked cfg;
     Vec3i numCells;
     float[] noiseSamples;
 
     const bool DEBUG = false;
 
-    public void SetConfig(Config2 _cfg)
+    public void SetConfig(Config _cfg)
     {
         cfgSrc = _cfg;
         cfg = cfgSrc.data;

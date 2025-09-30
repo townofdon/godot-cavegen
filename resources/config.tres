@@ -1,13 +1,8 @@
-[gd_resource type="Resource" script_class="Config" load_steps=2 format=3 uid="uid://cvplxws0iir6t"]
+[gd_resource type="Resource" script_class="Config2" load_steps=2 format=3 uid="uid://cvihrpcwndnad"]
 
-[ext_resource type="Script" uid="uid://dqy6yru8mv4oj" path="res://scripts/config.gd" id="1_mnatu"]
+[ext_resource type="Script" uid="uid://u6ssfqkgoccj" path="res://scripts/Config.cs" id="1_slds2"]
 
 [resource]
-script = ExtResource("1_mnatu")
-room_height = 50.0
-cell_size = 1.0
-iso_value = 0.53
-ceiling = 0.62
-curve = 0.967
-remove_orphans = false
-metadata/_custom_type_script = "uid://dqy6yru8mv4oj"
+script = ExtResource("1_slds2")
+CellSize = 1.0
+metadata/_custom_type_script = "uid://u6ssfqkgoccj"

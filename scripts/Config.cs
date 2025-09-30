@@ -1,7 +1,7 @@
 using Godot;
 
 [GlobalClass]
-public partial class Config2 : Resource
+public partial class Config : Resource
 {
 
     public struct DataPacked

@@ -1,18 +1,18 @@
 extends Node3D
 class_name CaveGen
 
-@export var config2:Config2
+@export var config:Config
 @export var noise:FastNoiseLite
 
-@onready var meshGen:MeshInstance3D = %mesh
+@onready var meshGen:MeshGen = %mesh
 @onready var notifTimer:Timer = %Timer
 
 var noiseB:FastNoiseLite
 
 func _ready() -> void:
-	assert(config2)
+	assert(config)
 	assert(noise)
-	config2.OnChanged.connect(_notify_change)
+	config.OnChanged.connect(_notify_change)
 
 	# setup notification timer
 	notifTimer.autostart = false
@@ -21,20 +21,20 @@ func _ready() -> void:
 	notifTimer.stop()
 
 	# setup meshgen
-	meshGen.SetConfig(config2)
+	meshGen.SetConfig(config)
 	regenerate()
 
 func regenerate():
 	if !meshGen: return
 	if !noise: return
 	#meshGen.generate(noise)
-	meshGen.SetConfig(config2)
+	meshGen.SetConfig(config)
 	meshGen.Generate(noise)
 
 	if meshGen.mesh is ImmediateMesh:
 		var mat:ShaderMaterial = meshGen.material_override
 		if mat && mat is ShaderMaterial:
-			var y_ceil := config2.RoomHeight * config2.Ceiling
+			var y_ceil := config.RoomHeight * config.Ceiling
 			mat.set_shader_parameter("y_ceil", y_ceil * 0.8)
 			mat.set_shader_parameter("y_min", 0.0)
 

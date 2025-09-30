@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="Config2" load_steps=2 format=3 uid="uid://cvihrpcwndnad"]
-
-[ext_resource type="Script" uid="uid://u6ssfqkgoccj" path="res://scripts/Config2.cs" id="1_slds2"]
-
-[resource]
-script = ExtResource("1_slds2")
-CellSize = 1.0
-metadata/_custom_type_script = "uid://u6ssfqkgoccj"

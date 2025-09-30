@@ -1,7 +1,6 @@
 using Godot;
 using CaveGen.Types;
 using CaveGen.Constants;
-// using System.Runtime.CompilerServices;
 
 using System.Diagnostics;
 
@@ -13,41 +12,32 @@ public partial class MeshGen : MeshInstance3D
     Vec3i numCells;
     float[] noiseSamples;
 
-    const bool DEBUG = false;
-
     public void SetConfig(Config _cfg)
     {
         cfgSrc = _cfg;
         cfg = cfgSrc.data;
     }
 
-    public void Generate(Noise noise)
+    public void Generate(Noise noise, Noise borderNoise)
     {
-        Stopwatch stopwatch = new Stopwatch();
+        Stopwatch stopwatch = new();
 
         cfg = cfgSrc.data;
 
         stopwatch.Restart();
-        ProcessNoise(noise);
+        ProcessNoise(noise, borderNoise);
         stopwatch.Stop();
         var elapsed = stopwatch.Elapsed.TotalMilliseconds;
         GD.Print("ProcessNoise() - " + elapsed + "ms");
 
-        if (DEBUG)
-        {
-            DebugNoiseGrid();
-        }
-        else
-        {
-            stopwatch.Restart();
-            MarchCubes();
-            stopwatch.Stop();
-            elapsed = stopwatch.Elapsed.TotalMilliseconds;
-            GD.Print("MarchCubes() - " + elapsed + "ms");
-        }
+        stopwatch.Restart();
+        MarchCubes();
+        stopwatch.Stop();
+        elapsed = stopwatch.Elapsed.TotalMilliseconds;
+        GD.Print("MarchCubes() - " + elapsed + "ms");
     }
 
-    void ProcessNoise(Noise noise)
+    void ProcessNoise(Noise noise, Noise borderNoise)
     {
         numCells = new Vec3i(
             Mathf.FloorToInt(cfg.RoomWidth / cfg.CellSize) + cfg.BorderSize * 2,
@@ -59,37 +49,48 @@ public partial class MeshGen : MeshInstance3D
         var maxV = float.NegativeInfinity;
 
         // first pass - sample all noise values in grid
-        for (int z = 0; z < numCells.z; z++)
+        if (cfg.ShowNoise)
         {
-            for (int y = 0; y < numCells.y; y++)
+            for (int z = 0; z < numCells.z; z++)
             {
-                for (int x = 0; x < numCells.x; x++)
+                for (int y = 0; y < numCells.y; y++)
                 {
-                    int i = x + y * numCells.x + z * numCells.y * numCells.z;
-                    float val = noise.GetNoise3D(x * cfg.CellSize, y * cfg.CellSize, z * cfg.CellSize);
-                    noiseSamples[i] = val;
-                    if (val < minV) { minV = val; }
-                    if (val > maxV) { maxV = val; }
+                    for (int x = 0; x < numCells.x; x++)
+                    {
+                        if (cfg.ShowNoise)
+                        {
+                            int i = x + y * numCells.x + z * numCells.y * numCells.z;
+                            float val = noise.GetNoise3D(x * cfg.CellSize, y * cfg.CellSize, z * cfg.CellSize);
+                            noiseSamples[i] = val;
+                            if (val < minV) { minV = val; }
+                            if (val > maxV) { maxV = val; }
+                        }
+                    }
                 }
             }
         }
         // second pass - normalize noise values
-        for (int z = 0; z < numCells.z; z++)
+        if (cfg.ShowNoise)
         {
-            for (int y = 0; y < numCells.y; y++)
+            for (int z = 0; z < numCells.z; z++)
             {
-                for (int x = 0; x < numCells.x; x++)
+                for (int y = 0; y < numCells.y; y++)
                 {
-                    int i = x + y * numCells.x + z * numCells.y * numCells.z;
-                    float val;
-                    val = Mathf.InverseLerp(minV, maxV, noiseSamples[i]);
-                    val = Mathf.Clamp(val, 0f, 1f);
-                    // apply noise curve
-                    var valEaseIn = Easing.InCubic(val);
-                    var valEaseOut = Easing.OutCubic(val);
-                    val = Mathf.Lerp(valEaseIn, val, Mathf.Clamp(cfg.Curve, 0, 1));
-                    val = Mathf.Lerp(val, valEaseOut, Mathf.Clamp(cfg.Curve - 1, 0, 1));
-                    noiseSamples[i] = val * GetAboveCeilMultiplier(y);
+                    for (int x = 0; x < numCells.x; x++)
+                    {
+                        int i = x + y * numCells.x + z * numCells.y * numCells.z;
+                        float val;
+                        val = Mathf.InverseLerp(minV, maxV, noiseSamples[i]);
+                        val = Mathf.Clamp(val, 0f, 1f);
+                        // apply noise curve
+                        var valEaseIn = Easing.InCubic(val);
+                        var valEaseOut = Easing.OutCubic(val);
+                        val = Mathf.Lerp(valEaseIn, val, Mathf.Clamp(cfg.Curve, 0, 1));
+                        val = Mathf.Lerp(val, valEaseOut, Mathf.Clamp(cfg.Curve - 1, 0, 1));
+                        var zeroValue = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
+                        zeroValue = Mathf.Lerp(0f, zeroValue, cfg.FalloffAboveCeiling);
+                        noiseSamples[i] = Mathf.Lerp(val, zeroValue, GetAboveCeilAmount(y));
+                    }
                 }
             }
         }
@@ -101,42 +102,65 @@ public partial class MeshGen : MeshInstance3D
                 for (int x = 0; x < numCells.x; x++)
                 {
                     int i = x + y * numCells.x + z * numCells.y * numCells.z;
+                    // apply bounds
                     if (IsAtBoundary(x, y, z))
                     {
                         noiseSamples[i] = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
                         continue;
                     }
-                    if (IsBelowCeiling(y) && IsAtBorder(x, y, z))
+                    // apply border
+                    if (IsAtBorder(x, y, z))
                     {
-                        noiseSamples[i] = Mathf.Max(noiseSamples[i], cfg.IsoValue + 0.1f);
+                        noiseSamples[i] = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
+                        if (IsBelowCeiling(y) && cfg.ShowBorder)
+                        {
+                            noiseSamples[i] = Mathf.Max(noiseSamples[i], cfg.IsoValue + 0.1f);
+                        }
                         continue;
+                    }
+                    // apply falloff to noise above ceil && close to border
+                    if (!IsBelowCeiling(y) && cfg.FalloffNearBorder > 0)
+                    {
+                        var dist = DistFromBorder(x, y, z);
+                        var t = Mathf.InverseLerp(0f, (float)cfg.FalloffNearBorder, dist - 1) * (1 - GetAboveCeilAmount(y));
+                        var zeroValue = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
+                        noiseSamples[i] = Mathf.Lerp(zeroValue, noiseSamples[i], Mathf.Clamp(t, 0, 1));
                     }
                 }
             }
         }
+        // apply border noise
+        if (cfg.UseBorderNoise)
+        {
+            // TODO: IMPLEMENT
+        }
     }
 
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    float GetAboveCeilMultiplier(int y)
+    float GetAboveCeilAmount(int y)
     {
-        int ceiling = Mathf.FloorToInt(numCells.y * cfg.Ceiling);
-        int max_y = numCells.y - 1;
+        if (cfg.Ceiling >= 1)
+        {
+            return 0f;
+        }
+        float ceiling = GetCeiling();
+        float maxY = numCells.y - 1 - cfg.BorderSize * 2;
+        if (Mathf.IsZeroApprox(Mathf.Abs(ceiling - maxY))) return 0f;
+        maxY = Mathf.Lerp(ceiling, maxY, cfg.FalloffAboveCeiling);
         if (y < ceiling)
         {
-            return 1.0f;
+            return 0f;
         }
-        if (y > max_y)
+        if (y >= maxY)
         {
-            return 0.0f;
+            return 1f;
         }
-        if (ceiling >= max_y)
+        if (ceiling >= maxY || Mathf.IsZeroApprox(Mathf.Abs(ceiling - maxY)))
         {
-            return 0.0f;
+            return 1f;
         }
-        return Mathf.Clamp(Mathf.InverseLerp(max_y, ceiling, y), 0.0f, 1.0f);
+        return Mathf.Clamp(Mathf.InverseLerp(ceiling, maxY, y), 0f, 1f);
     }
 
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     bool IsAtBoundary(int x, int y, int z)
     {
         return (
@@ -149,7 +173,6 @@ public partial class MeshGen : MeshInstance3D
         );
     }
 
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     bool IsAtBorder(int x, int y, int z)
     {
         return (
@@ -161,13 +184,20 @@ public partial class MeshGen : MeshInstance3D
         );
     }
 
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
     bool IsBelowCeiling(int y)
     {
-        return y + 1 < cfg.Ceiling * numCells.y;
+        if (cfg.Ceiling >= 1)
+        {
+            return false;
+        }
+        return y <= GetCeiling();
     }
 
-    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    float GetCeiling()
+    {
+        return cfg.Ceiling * (numCells.y - 1 - cfg.BorderSize * 2);
+    }
+
     int DistFromBorder(int x, int y, int z)
     {
         int distX = Mathf.Min(Mathf.Abs(x - cfg.BorderSize), Mathf.Abs(numCells.x - 1 - cfg.BorderSize - x));
@@ -186,7 +216,7 @@ public partial class MeshGen : MeshInstance3D
         Vector3[] points = new Vector3[3];
         for (int z = 0; z < numCells.z - 1; z++)
         {
-            for (int y = 0; y < numCells.y - 1; y++)
+            for (int y = 0; y < numCells.y - 1 - cfg.BorderSize * 2; y++)
             {
                 for (int x = 0; x < numCells.x - 1; x++)
                 {
@@ -234,7 +264,7 @@ public partial class MeshGen : MeshInstance3D
         foreach (var point in points)
         {
             var x = (point.X - cfg.BorderSize) * cfg.CellSize;
-            var y = (point.Y - cfg.BorderSize) * cfg.CellSize;
+            var y = point.Y * cfg.CellSize;
             var z = (point.Z - cfg.BorderSize) * cfg.CellSize;
             (Mesh as ImmediateMesh).SurfaceSetUV(uv);
             (Mesh as ImmediateMesh).SurfaceSetNormal(normal);
@@ -325,27 +355,27 @@ public partial class MeshGen : MeshInstance3D
         return p;
     }
 
-    void DebugNoiseGrid()
-    {
-        ImmediateMesh mesh = new();
-        Mesh = mesh;
-        mesh.SurfaceBegin(Mesh.PrimitiveType.Points);
-        for (int z = 0; z < numCells.z; z++)
-        {
-            for (int y = 0; y < numCells.y; y++)
-            {
-                for (int x = 0; x < numCells.x; x++)
-                {
-                    var active = IsPointActive(x, y, z);
-                    var color = new Color(1, 0.5f, 0, 0.25f);
-                    if (active)
-                    {
-                        color = new Color(0.1f, 0.25f, 1f, 0.8f);
-                    }
-                    mesh.SurfaceSetColor(color);
-                    mesh.SurfaceAddVertex(new Vector3(x * cfg.CellSize, y * cfg.CellSize, z * cfg.CellSize));
-                }
-            }
-        }
-    }
+    // void DebugNoiseGrid()
+    // {
+    //     ImmediateMesh mesh = new();
+    //     Mesh = mesh;
+    //     mesh.SurfaceBegin(Mesh.PrimitiveType.Points);
+    //     for (int z = 0; z < numCells.z; z++)
+    //     {
+    //         for (int y = 0; y < numCells.y; y++)
+    //         {
+    //             for (int x = 0; x < numCells.x; x++)
+    //             {
+    //                 var active = IsPointActive(x, y, z);
+    //                 var color = new Color(1, 0.5f, 0, 0.25f);
+    //                 if (active)
+    //                 {
+    //                     color = new Color(0.1f, 0.25f, 1f, 0.8f);
+    //                 }
+    //                 mesh.SurfaceSetColor(color);
+    //                 mesh.SurfaceAddVertex(new Vector3(x * cfg.CellSize, y * cfg.CellSize, z * cfg.CellSize));
+    //             }
+    //         }
+    //     }
+    // }
 }

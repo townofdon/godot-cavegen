@@ -1,10 +1,11 @@
-[gd_scene load_steps=16 format=3 uid="uid://dxfxnafbmfpq3"]
+[gd_scene load_steps=17 format=3 uid="uid://dxfxnafbmfpq3"]
 
 [ext_resource type="Script" uid="uid://rc8fwxkbdb3s" path="res://scripts/cavegen.gd" id="1_g2w4a"]
 [ext_resource type="Resource" uid="uid://cvihrpcwndnad" path="res://resources/config.tres" id="2_81352"]
 [ext_resource type="FastNoiseLite" uid="uid://cbsx070fvsncd" path="res://resources/noise.tres" id="3_1gmwy"]
 [ext_resource type="Shader" uid="uid://dfbfcdbqplpaw" path="res://shaders/mesh-preview.gdshader" id="3_81352"]
 [ext_resource type="Script" uid="uid://dufqltf3etb6e" path="res://scripts/cameraman.gd" id="4_oktae"]
+[ext_resource type="FastNoiseLite" uid="uid://wyyrgh73joql" path="res://resources/noiseBorder.tres" id="4_wh0gb"]
 [ext_resource type="Script" uid="uid://xvfau5vu2kth" path="res://scripts/MeshGen.cs" id="5_1gmwy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1gmwy"]
@@ -62,8 +63,9 @@ in_3d_space = true
 
 [node name="CaveGenerator" type="Node3D" parent="."]
 script = ExtResource("1_g2w4a")
-config = ExtResource("2_81352")
+cfg = ExtResource("2_81352")
 noise = ExtResource("3_1gmwy")
+borderNoise = ExtResource("4_wh0gb")
 
 [node name="mesh" type="MeshInstance3D" parent="CaveGenerator"]
 unique_name_in_owner = true

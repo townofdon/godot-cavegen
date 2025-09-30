@@ -1,8 +1,14 @@
-[gd_resource type="Resource" script_class="Config2" load_steps=2 format=3 uid="uid://cvihrpcwndnad"]
+[gd_resource type="Resource" script_class="Config" load_steps=2 format=3 uid="uid://cvihrpcwndnad"]
 
-[ext_resource type="Script" uid="uid://u6ssfqkgoccj" path="res://scripts/Config.cs" id="1_slds2"]
+[ext_resource type="Script" uid="uid://u6ssfqkgoccj" path="res://scripts/Config.cs" id="1_mnatu"]
 
 [resource]
-script = ExtResource("1_slds2")
-CellSize = 1.0
+script = ExtResource("1_mnatu")
+Ceiling = 0.77
+ActivePlaneOffset = 5.0
+IsoValue = 0.4
+Curve = 0.55
+FalloffAboveCeiling = 0.0
+RemoveOrphans = false
+FalloffNearBorder = 1
 metadata/_custom_type_script = "uid://u6ssfqkgoccj"

@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_mnatu")
-Ceiling = 0.68
+Ceiling = 1.0
 ActivePlaneOffset = 5.0
 IsoValue = 0.21
 Curve = 0.1

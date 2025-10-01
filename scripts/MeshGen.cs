@@ -404,7 +404,7 @@ public partial class MeshGen : MeshInstance3D
     {
         if (cfg.Ceiling >= 1)
         {
-            return false;
+            return true;
         }
         return y <= GetCeiling();
     }
@@ -433,7 +433,7 @@ public partial class MeshGen : MeshInstance3D
         Vector3[] points = new Vector3[3];
         for (int z = 0; z < numCells.z - 1; z++)
         {
-            for (int y = 0; y < numCells.y - 1 - cfg.BorderSize * 2; y++)
+            for (int y = 0; y < numCells.y - 1; y++)
             {
                 for (int x = 0; x < numCells.x - 1; x++)
                 {

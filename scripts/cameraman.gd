@@ -11,9 +11,10 @@ var velocity:Vector3 = Vector3.ZERO
 var looking:bool = false
 
 func _ready() -> void:
-	#Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	look.x = transform.basis.get_euler().x
-	look.y = transform.basis.get_euler().y
+	# Note to future Don - x and y are swapped, because humans associate x with horizontal, and y with vertical.
+	# Thinking in terms of rotation, rotating around the x axis would produce "vertical" rotation, and rotating about the y axis produces "horizontal".
+	look.x = transform.basis.get_euler().y / -0.001
+	look.y = transform.basis.get_euler().x / -0.001
 
 func _physics_process(delta: float) -> void:
 	if (Input.is_action_pressed("looking")):
@@ -44,8 +45,6 @@ func _physics_process(delta: float) -> void:
 func _input(event):
 	if (event is InputEventMouseMotion) && looking:
 		look += event.relative
-		#if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
-			#look += event.relative
 
 # I think this connects to the SceneTree notifs
 # see: https://www.reddit.com/r/godot/comments/e36zyq/how_can_i_detect_when_the_mouse_cursor_is_inside/

@@ -4,9 +4,7 @@
 
 [resource]
 script = ExtResource("1_mnatu")
-RoomHeight = 32.542
-Ceiling = 0.65
-ActivePlaneOffset = 5.0
+RoomHeight = 19.834
 IsoValue = 0.21
 Curve = 0.1
 FalloffAboveCeiling = 0.22

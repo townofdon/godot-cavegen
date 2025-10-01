@@ -7,11 +7,13 @@ class_name CaveGen
 
 @onready var meshGen:MeshGen = %mesh
 @onready var notifTimer:Timer = %Timer
+@onready var testCube:CSGBox3D = %CSGBox3D
 
 var noiseB:FastNoiseLite
 var borderNoiseB:FastNoiseLite
 
 func _ready() -> void:
+	testCube.queue_free()
 	assert(cfg)
 	assert(noise)
 	assert(borderNoise)
@@ -34,6 +36,7 @@ func _ready() -> void:
 	borderNoiseB = borderNoise.duplicate()
 
 func regenerate():
+	if Engine.is_editor_hint(): return
 	if !meshGen: return
 	if !noise: return
 	if !borderNoise: return

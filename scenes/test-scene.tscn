@@ -1,6 +1,7 @@
 [gd_scene load_steps=17 format=3 uid="uid://dxfxnafbmfpq3"]
 
 [ext_resource type="Script" uid="uid://rc8fwxkbdb3s" path="res://scripts/cavegen.gd" id="1_g2w4a"]
+[ext_resource type="Script" uid="uid://bv61xpmv57q0g" path="res://scripts/cave_gen_test.gd" id="1_pyd17"]
 [ext_resource type="Resource" uid="uid://cvihrpcwndnad" path="res://resources/config.tres" id="2_81352"]
 [ext_resource type="FastNoiseLite" uid="uid://cbsx070fvsncd" path="res://resources/noise.tres" id="3_1gmwy"]
 [ext_resource type="Shader" uid="uid://dfbfcdbqplpaw" path="res://shaders/mesh-preview.gdshader" id="3_81352"]
@@ -29,15 +30,23 @@ sky_horizon_color = Color(0.32314, 0.715301, 0.817377, 1)
 sky_material = SubResource("ProceduralSkyMaterial_81352")
 
 [sub_resource type="Environment" id="Environment_q7s53"]
-background_mode = 2
+background_mode = 1
+background_color = Color(0.042577885, 0.085452, 0.09203526, 1)
 sky = SubResource("Sky_1gmwy")
 ambient_light_source = 2
 ambient_light_color = Color(0.0532591, 0.178054, 0.268244, 1)
 ambient_light_energy = 0.78
 
-[sub_resource type="BoxMesh" id="BoxMesh_q7s53"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_4n1no"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pyd17"]
+render_priority = 0
+shader = ExtResource("3_81352")
+shader_parameter/light_direction = Vector3(0, 0, 1)
+shader_parameter/color_lit = Color(0.9497704, 0.46108985, 0.44405496, 1)
+shader_parameter/color_shadow = Color(0.039215688, 0.27058825, 0.34901962, 1)
+shader_parameter/color_ceil = Color(0, 0.9764706, 0.74509805, 0.6313726)
+shader_parameter/color_bottom = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/y_ceil = 4.8754997
+shader_parameter/y_min = 0.0
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_oktae"]
 noise_type = 3
@@ -61,6 +70,10 @@ in_3d_space = true
 
 [node name="TestScene" type="Node3D"]
 
+[node name="CaveGenTest" type="Node3D" parent="."]
+script = ExtResource("1_pyd17")
+cfg = ExtResource("2_81352")
+
 [node name="CaveGenerator" type="Node3D" parent="."]
 script = ExtResource("1_g2w4a")
 cfg = ExtResource("2_81352")
@@ -81,7 +94,7 @@ wait_time = 0.2
 one_shot = true
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.755431, 0.655229, 0, -0.655229, 0.755431, 0, 2.20209, 2.00641)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 15, 44.16591, 15)
 environment = SubResource("Environment_q7s53")
 script = ExtResource("4_oktae")
 acceleration = 4.16
@@ -90,15 +103,11 @@ acceleration = 4.16
 
 [node name="Environment" type="Node3D" parent="."]
 
-[node name="floor" type="MeshInstance3D" parent="Environment"]
-transform = Transform3D(10, 0, 0, 0, 1, 0, 0, 0, 10, 0, -0.917449, 0)
-mesh = SubResource("BoxMesh_q7s53")
-skeleton = NodePath("../..")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="Environment/floor"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/floor/StaticBody3D"]
-shape = SubResource("BoxShape3D_4n1no")
+[node name="CSGBox3D" type="CSGBox3D" parent="Environment"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 9.917, 15)
+size = Vector3(30, 19.834, 30)
+material = SubResource("ShaderMaterial_pyd17")
 
 [node name="UI" type="Node2D" parent="."]
 

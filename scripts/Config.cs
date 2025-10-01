@@ -10,6 +10,7 @@ public partial class Config : Resource
         // debug
         public bool ShowNoise;
         public bool ShowBorder;
+        public bool ShowOuterWalls;
         // global values
         public float RoomWidth;
         public float RoomHeight;
@@ -49,6 +50,10 @@ public partial class Config : Resource
     [Export]
     public bool ShowBorder { get { return _showBorder; } set { _showBorder = value; notifyChanged(); } }
     bool _showBorder = true;
+
+    [Export]
+    public bool ShowOuterWalls { get { return _showOuterWalls; } set { _showOuterWalls = value; notifyChanged(); } }
+    bool _showOuterWalls = true;
 
     [ExportGroup("Global Values")]
 
@@ -121,6 +126,7 @@ public partial class Config : Resource
         // debug
         data.ShowNoise = ShowNoise;
         data.ShowBorder = ShowBorder;
+        data.ShowOuterWalls = ShowOuterWalls;
         // global values
         data.RoomHeight = RoomHeight;
         data.RoomWidth = RoomWidth;

@@ -40,9 +40,9 @@ public partial class MeshGen : MeshInstance3D
     void ProcessNoise(Noise noise, Noise borderNoise)
     {
         numCells = new Vec3i(
-            Mathf.FloorToInt(cfg.RoomWidth / cfg.CellSize) + cfg.BorderSize * 2,
-            Mathf.FloorToInt(cfg.RoomHeight / cfg.CellSize) + cfg.BorderSize * 2,
-            Mathf.FloorToInt(cfg.RoomDepth / cfg.CellSize) + cfg.BorderSize * 2
+            Mathf.FloorToInt(cfg.RoomWidth / cfg.CellSize),
+            Mathf.FloorToInt(cfg.RoomHeight / cfg.CellSize),
+            Mathf.FloorToInt(cfg.RoomDepth / cfg.CellSize)
         );
         if (noiseSamples == null || noiseSamples.Length != numCells.x * numCells.y * numCells.z)
         {
@@ -107,7 +107,7 @@ public partial class MeshGen : MeshInstance3D
                 {
                     int i = x + y * numCells.x + z * numCells.y * numCells.z;
                     // apply bounds
-                    if (IsAtBoundary(x, y, z))
+                    if (IsAtBoundaryXZ(x, z) && cfg.ShowOuterWalls || IsAtBoundaryY(y))
                     {
                         noiseSamples[i] = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
                         continue;
@@ -366,15 +366,21 @@ public partial class MeshGen : MeshInstance3D
         return Mathf.Clamp(Mathf.InverseLerp(ceiling, maxY, y), 0f, 1f);
     }
 
-    bool IsAtBoundary(int x, int y, int z)
+    bool IsAtBoundaryXZ(int x, int z)
     {
         return (
             x == 0 ||
-            y == 0 ||
             z == 0 ||
             x == numCells.x - 1 ||
-            y == numCells.y - 1 ||
             z == numCells.z - 1
+        );
+    }
+
+    bool IsAtBoundaryY(int y)
+    {
+        return (
+            y == 0 ||
+            y == numCells.y - 1
         );
     }
 
@@ -411,7 +417,7 @@ public partial class MeshGen : MeshInstance3D
 
     float GetCeiling()
     {
-        return cfg.Ceiling * (numCells.y - 1 - cfg.BorderSize * 2);
+        return Mathf.Min(cfg.Ceiling * (numCells.y - 1), numCells.y - 2);
     }
 
     int DistFromBorder(int x, int y, int z)
@@ -453,8 +459,8 @@ public partial class MeshGen : MeshInstance3D
                         var (p0, p1) = Constants.EDGES[edgeIdx];
                         var (x0, y0, z0) = Constants.POINTS[p0];
                         var (x1, y1, z1) = Constants.POINTS[p1];
-                        var a = new Vec3(x + x0, y + y0, z + z0);
-                        var b = new Vec3(x + x1, y + y1, z + z1);
+                        var a = new Vec3i(x + x0, y + y0, z + z0);
+                        var b = new Vec3i(x + x1, y + y1, z + z1);
                         var p = InterpolatePoints(a, b);
                         points[pointIndex] = new Vector3(p.x, p.y, p.z);
                         pointIndex++;
@@ -481,9 +487,9 @@ public partial class MeshGen : MeshInstance3D
         var normal = -(p2 - p1).Cross(p3 - p1).Normalized();
         foreach (var point in points)
         {
-            var x = (point.X - cfg.BorderSize) * cfg.CellSize;
+            var x = point.X * cfg.CellSize;
             var y = point.Y * cfg.CellSize;
-            var z = (point.Z - cfg.BorderSize) * cfg.CellSize;
+            var z = point.Z * cfg.CellSize;
             (Mesh as ImmediateMesh).SurfaceSetUV(uv);
             (Mesh as ImmediateMesh).SurfaceSetNormal(normal);
             (Mesh as ImmediateMesh).SurfaceAddVertex(GlobalPosition + new Vector3(x, y, z));
@@ -543,22 +549,34 @@ public partial class MeshGen : MeshInstance3D
     }
 
     // source: https://cs.stackexchange.com/a/71116
-    Vec3 InterpolatePoints(Vec3 a, Vec3 b)
+    Vec3 InterpolatePoints(Vec3i a, Vec3i b)
     {
+        // if one of the points is on a boundary plane, return that point so that our room meshes line up perfectly.
+        bool aBound = IsAtBoundaryXZ(a.x, a.z);
+        bool bBound = IsAtBoundaryXZ(b.x, b.z);
+        bool onSamePlane = a.x == b.x || a.z == b.z;
+        if (aBound && !(aBound && bBound && onSamePlane))
+        {
+            return new Vec3(a);
+        }
+        if (bBound && !(aBound && bBound && onSamePlane))
+        {
+            return new Vec3(b);
+        }
         if (!cfg.Interpolate)
         {
             return (a + b) * 0.5f;
         }
-        var noise_a = GetNoiseValue((int)a.x, (int)a.y, (int)a.z);
-        var noise_b = GetNoiseValue((int)b.x, (int)b.y, (int)b.z);
+        var noise_a = GetNoiseValue(a.x, a.y, a.z);
+        var noise_b = GetNoiseValue(b.x, b.y, b.z);
         Assert(noise_a >= cfg.IsoValue || noise_b >= cfg.IsoValue);
         if (Mathf.IsZeroApprox(Mathf.Abs(cfg.IsoValue - noise_a)))
         {
-            return a;
+            return new Vec3(a);
         }
         if (Mathf.IsZeroApprox(Mathf.Abs(cfg.IsoValue - noise_b)))
         {
-            return b;
+            return new Vec3(b);
         }
         if (Mathf.IsZeroApprox(Mathf.Abs(noise_a - noise_b)))
         {

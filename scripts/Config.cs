@@ -21,6 +21,7 @@ public partial class Config : Resource
         // room noise
         public float IsoValue;
         public float Curve;
+        public float Tilt;
         public float FalloffAboveCeiling;
         public bool Interpolate;
         public bool RemoveOrphans;
@@ -91,6 +92,10 @@ public partial class Config : Resource
     public float Curve { get { return _curve; } set { _curve = value; notifyChanged(); } }
     float _curve = 1f;
 
+    [Export(PropertyHint.Range, "0,2,0.01")]
+    public float Tilt { get { return _tilt; } set { _tilt = value; notifyChanged(); } }
+    float _tilt = 1f;
+
     [Export(PropertyHint.Range, "0,1,0.01")]
     public float FalloffAboveCeiling { get { return _falloffAboveCeiling; } set { _falloffAboveCeiling = value; notifyChanged(); } }
     float _falloffAboveCeiling = 0.5f;
@@ -137,6 +142,7 @@ public partial class Config : Resource
         // room noise
         data.IsoValue = IsoValue;
         data.Curve = Curve;
+        data.Tilt = Tilt;
         data.FalloffAboveCeiling = FalloffAboveCeiling;
         data.Interpolate = Interpolate;
         data.RemoveOrphans = RemoveOrphans;

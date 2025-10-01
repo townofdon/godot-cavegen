@@ -91,9 +91,17 @@ public partial class MeshGen : MeshInstance3D
                         var valEaseOut = Easing.OutCubic(val);
                         val = Mathf.Lerp(valEaseIn, val, Mathf.Clamp(cfg.Curve, 0, 1));
                         val = Mathf.Lerp(val, valEaseOut, Mathf.Clamp(cfg.Curve - 1, 0, 1));
+                        // apply falloff above ceiling
                         var zeroValue = Mathf.Min(noiseSamples[i], cfg.IsoValue - 0.1f);
                         zeroValue = Mathf.Lerp(0f, zeroValue, cfg.FalloffAboveCeiling);
-                        noiseSamples[i] = Mathf.Lerp(val, zeroValue, GetAboveCeilAmount(y));
+                        val = Mathf.Lerp(val, zeroValue, GetAboveCeilAmount(y));
+                        // apply tilt
+                        var yPct = GetFloorToCeilAmount(y);
+                        var valTiltTop = val * Mathf.Lerp(0f, 1f, yPct);
+                        var valTiltBottom = val * Mathf.Lerp(1f, 0f, yPct);
+                        val = Mathf.Lerp(valTiltTop, val, Mathf.Clamp(cfg.Tilt, 0, 1));
+                        val = Mathf.Lerp(val, valTiltBottom, Mathf.Clamp(cfg.Tilt - 1, 0, 1));
+                        noiseSamples[i] = val;
                     }
                 }
             }
@@ -366,6 +374,12 @@ public partial class MeshGen : MeshInstance3D
         return Mathf.Clamp(Mathf.InverseLerp(ceiling, maxY, y), 0f, 1f);
     }
 
+    float GetFloorToCeilAmount(int y)
+    {
+        float ceiling = GetCeiling();
+        return y / ceiling;
+    }
+
     bool IsAtBoundaryXZ(int x, int z)
     {
         return (
@@ -417,7 +431,7 @@ public partial class MeshGen : MeshInstance3D
 
     float GetCeiling()
     {
-        return Mathf.Min(cfg.Ceiling * (numCells.y - 1), numCells.y - 2);
+        return Mathf.Max(1f, Mathf.Min(cfg.Ceiling * (numCells.y - 1), numCells.y - 2));
     }
 
     int DistFromBorder(int x, int y, int z)
